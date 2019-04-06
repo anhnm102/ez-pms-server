@@ -1,30 +1,29 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import * as bcrypt from 'bcryptjs';
+import { compare, genSalt, hash } from 'bcryptjs';
 import { Model } from 'mongoose';
+import { AuthService } from '../shared/auth/auth.service';
 
 @Injectable()
 export class UsersService {
-    constructor(@InjectModel('User') private readonly userModel: Model<any>) {}
+    constructor(@InjectModel('User') private readonly userModel: Model<any>,
+    @Inject(forwardRef(() => AuthService)) private readonly authService: AuthService) {}
 
-    findAll() {
-        return this.userModel.find();
+    async findAll(filter = {}) {
+        return await this.userModel.find(filter);
     }
 
-    findOne(id) {
-        return this.userModel.findById(id);
+    async findById(id) {
+        return await this.userModel.findById(id);
     }
 
-    async validate(email, password) {
-        const user = await <any>this.userModel.findOne({ email: email });
-        const rs = await bcrypt.compare(password, user.password);
-        return rs ? 'ok' : 'failed';
+    async findOne(filter = {}, includePassword?) {
+        return await this.userModel.findOne(filter).select(includePassword ? '+password' : '');
     }
 
     async create(dto) {
-        const salt = await bcrypt.genSalt();
-        const hash = await bcrypt.hash(dto.password, salt);
-        dto.password = hash;
+        const salt = await genSalt();
+        dto.password = await hash(dto.password, salt);
         return await this.userModel.create(dto);
     }
 
@@ -34,5 +33,36 @@ export class UsersService {
 
     update(id, dto) {
         return this.userModel.findByIdAndUpdate(id, dto);
+    }
+
+    async login(form) {
+        const { email, password} = form;
+        const user = await this.findOne({email : email}, true);
+
+        if (!user) {
+            throw new HttpException('Invalid credentials', HttpStatus.NOT_FOUND);
+        }
+
+        const isMatch = await compare(password, user.password);
+
+        if (!isMatch) {
+            throw new HttpException('Invalid credentials', HttpStatus.BAD_REQUEST);
+        }
+
+        const payLoad = {
+            name: user.name,
+            email: user.email,
+            role: user.role
+        }
+        console.log(payLoad);
+
+        const token = await this.authService.signPayload(payLoad);
+        return {
+            token: token,
+            user: {
+                name: user.name,
+                role: user.role,
+            }
+        };
     }
 }
