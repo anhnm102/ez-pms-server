@@ -27,12 +27,12 @@ export class UsersService {
         return await this.userModel.create(dto);
     }
 
-    delete(id) {
-        return this.userModel.findByIdAndDelete(id);
+    async delete(id) {
+        return await this.userModel.findByIdAndDelete(id);
     }
 
-    update(id, dto) {
-        return this.userModel.findByIdAndUpdate(id, dto);
+    async update(id, dto) {
+        return await this.userModel.findByIdAndUpdate(id, dto);
     }
 
     async login(form) {
@@ -52,6 +52,7 @@ export class UsersService {
         const payLoad = {
             name: user.name,
             email: user.email,
+            permission: user.permission,
             role: user.role
         }
         console.log(payLoad);

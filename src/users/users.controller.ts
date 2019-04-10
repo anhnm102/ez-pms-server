@@ -4,52 +4,43 @@ import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../shared/decorators/roles.decorator';
 import { UserRole } from './models/user-role.enum';
 import { RolesGuard } from '../shared/guards/roles.guard';
+import { PermissionsGuard } from '../permissions/guards/permissions.guard';
+import { Permissions } from '../shared/decorators/permissions.decorator';
+import { UserPermission } from './models/user-permission.enum';
 
 @Controller('users')
+@UseGuards(AuthGuard(), RolesGuard)
+@UseGuards(AuthGuard(), PermissionsGuard)
+@Roles(UserRole.Admin, UserRole.User)
 export class UsersController {
     constructor(private usersService: UsersService) {}
 
     @Get()
-    @Roles(UserRole.Admin, UserRole.User)
-    @UseGuards(AuthGuard(), RolesGuard)
     findAll(@Query() query) {
         return this.usersService.findAll();
     }
 
     @Get(':id')
-    @Roles(UserRole.Admin, UserRole.User)
-    @UseGuards(AuthGuard(), RolesGuard)
     findOne(@Param('id') id) {
         return this.usersService.findById(id);
     }
 
     @Post()
+    @Permissions(UserPermission.AddUser)
     create(@Body() dto) {
         return this.usersService.create(dto);
     }
 
     @Put(':id')
-    @Roles(UserRole.Admin)
-    @UseGuards(AuthGuard(), RolesGuard)
+    @Permissions(UserPermission.EditUser)
     update(@Param('id') id, @Body() dto) {
         return this.usersService.update(id, dto);
     }
 
     @Delete(':id')
-    @Roles(UserRole.Admin)
-    @UseGuards(AuthGuard(), RolesGuard)
+    @Permissions(UserPermission.DeleteUser)
     delete(@Param('id') id) {
         return this.usersService.delete(id);
-    }
-
-    @Post('register')
-    async register(@Body() register) {
-        return 'ok...';
-    }
-
-    @Post('login')
-    async login(@Body() loginForm) {
-        return this.usersService.login(loginForm);
     }
 
 }
