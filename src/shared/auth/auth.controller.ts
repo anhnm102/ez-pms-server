@@ -14,4 +14,10 @@ export class AuthController {
     async login(@Body() loginForm) {
         return this.usersService.login(loginForm);
     }
+
+    // for fun
+    @Get('quotes')
+    randomQuote() {
+        return this.quoteService.getQuotes();
+    }
 }
