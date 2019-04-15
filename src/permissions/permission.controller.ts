@@ -8,7 +8,9 @@ import { UserRole } from '../users/models/user-role.enum';
 @Controller('permissions')
 @UseGuards(AuthGuard(), RolesGuard)
 export class PermissionController {
-    constructor(private permissionService: PermissionService) {}
+    constructor(
+        private permissionService: PermissionService
+    ) {}
 
     @Get('all')
     @Roles(UserRole.Admin)
@@ -17,10 +19,15 @@ export class PermissionController {
     }
 
     @Get()
-    @Roles(UserRole.Owner)
-    findOne(@Request() req) {
-        const q = {ownerId: req.user.ownerId};
-        return this.permissionService.findOne(q);
+    async findOne(@Request() req) {
+        const user = req.user;
+        const q = {ownerId: user.ownerId};
+        const permission = await this.permissionService.findOne(q);
+        if (user.role === "Owner") {
+            return permission;
+        } else {
+            return permission.permissionDetail.find(p => p.level === user.permission);
+        }
     }
 
     @Put()

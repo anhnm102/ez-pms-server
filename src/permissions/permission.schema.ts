@@ -5,12 +5,5 @@ export const PermissionSchema = new  mongoose.Schema({
       type: String,
       required: true,
     },
-    groupName: {
-      type: String,
-      required: true,
-    },
-    actions: {
-      type: Array,
-      required: true,
-    },
+    permissionDetail: Array,
 });

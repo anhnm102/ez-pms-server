@@ -22,19 +22,21 @@ export class PermissionService {
         const rules = [
             {
                 ownerId: ownerId,
-                groupName: 'Basic',
-                actions: ['FindAllUser']
-            },
-            {
-                ownerId: ownerId,
-                groupName: 'Medium',
-                actions: ['AddUser','EditUser','DeleteUser','FindAllUser','FindOneUser','AddCustomer','EditCustomer','DeleteCustomer','FindAllCustomer','FindOneCustomer',]
-            },
-            {
-                ownerId: ownerId,
-                groupName: 'High',
-                actions: ['AddUser','EditUser','DeleteUser','FindAllUser','FindOneUser','AddCustomer','EditCustomer','DeleteCustomer','FindAllCustomer','FindOneCustomer',]
-            },
+                permissionDetail: [
+                    {
+                        level: 'Low',
+                        actions: ['FindAllUser']
+                    },
+                    {
+                        level: 'Medium',
+                        actions: ['AddUser','EditUser','DeleteUser','FindAllUser','FindOneUser','AddCustomer','EditCustomer','DeleteCustomer','FindAllCustomer','FindOneCustomer',]
+                    },
+                    {
+                        level: 'High',
+                        actions: ['AddUser','EditUser','DeleteUser','FindAllUser','FindOneUser','AddCustomer','EditCustomer','DeleteCustomer','FindAllCustomer','FindOneCustomer',]
+                    },
+                ]
+            }
         ]
         return await this.permissionModel.create(rules);
     }

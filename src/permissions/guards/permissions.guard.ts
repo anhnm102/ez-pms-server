@@ -27,7 +27,8 @@ export class PermissionsGuard implements CanActivate {
     }
 
     const { permission, ownerId } = request.user;
-    const userPermission = await this.permissionService.findOne({groupName: permission, ownerId: ownerId});
+    const allPermissionLevel = await this.permissionService.findOne({ownerId: ownerId});
+    const userPermission = allPermissionLevel.permissionDetail.find(p => p.level = permission);
 
     if (userPermission.actions.indexOf(permissionRequired) >= 0) {
         return true;
