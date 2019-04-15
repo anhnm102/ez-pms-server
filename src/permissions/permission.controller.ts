@@ -10,7 +10,7 @@ import { UserRole } from '../users/models/user-role.enum';
 export class PermissionController {
     constructor(private permissionService: PermissionService) {}
 
-    @Get()
+    @Get('all')
     @Roles(UserRole.Admin)
     findAll() {
         return this.permissionService.findAll();
