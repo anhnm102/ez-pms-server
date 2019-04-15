@@ -1,12 +1,16 @@
 import * as mongoose from 'mongoose';
 
 export const PermissionSchema = new  mongoose.Schema({
-    name: {
+    ownerId: {
       type: String,
       required: true,
-      unique: true,
     },
-    permissions: {
+    groupName: {
+      type: String,
+      required: true,
+    },
+    actions: {
       type: Array,
+      required: true,
     },
 });

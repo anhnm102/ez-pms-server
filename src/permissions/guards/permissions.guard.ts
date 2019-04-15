@@ -13,18 +13,23 @@ export class PermissionsGuard implements CanActivate {
   async canActivate(
     context: ExecutionContext,
   ) {
-    const permissions = this.reflector.get<UserPermission[]>('permissions', context.getHandler());
+    const permissionRequired = this.reflector.get<UserPermission>('permission', context.getHandler());
 
     // no permission required
-    if (!permissions || permissions.length === 0) {
+    if (!permissionRequired || permissionRequired.length === 0) {
         return true;
     }
 
     const request = context.switchToHttp().getRequest();
-    const userPermissions = await this.permissionService.findOne({name: request.user.permission});
-    console.log(userPermissions);
 
-    if (permissions.every(p => userPermissions.indexOf(p) >= 0)) {
+    if (request.user.role == 'Owner' || request.user.role == 'Admin') { // Admin & Owner always has all permissions.
+      return true;
+    }
+
+    const { permission, ownerId } = request.user;
+    const userPermission = await this.permissionService.findOne({groupName: permission, ownerId: ownerId});
+
+    if (userPermission.actions.indexOf(permissionRequired) >= 0) {
         return true;
     }
 

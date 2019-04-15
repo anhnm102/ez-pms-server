@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Post, Body, Param, Delete, Put, UseGuards } from '@nestjs/common';
+import { Controller, Get, Body, Put, UseGuards, Request } from '@nestjs/common';
 import { PermissionService } from './permission.service';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../shared/decorators/roles.decorator';
@@ -7,23 +7,21 @@ import { UserRole } from '../users/models/user-role.enum';
 
 @Controller('permissions')
 @UseGuards(AuthGuard(), RolesGuard)
-@Roles(UserRole.Admin)
+@Roles(UserRole.Admin, UserRole.Owner)
 export class PermissionController {
     constructor(private permissionService: PermissionService) {}
 
     @Get()
-    findAll(@Query() query) {
-        return this.permissionService.findAll();
+    findAll(@Request() req) {
+        const q = {ownerId: req.user.ownerId};
+        return this.permissionService.findOne(q);
     }
 
-    @Put(':id')
-    update(@Param('id') id, @Body() dto) {
-        return this.permissionService.update(id, dto);
-    }
-
-    @Post()
-    create(@Body() dto) {
-        return this.permissionService.create(dto);
+    @Put()
+    update(@Body() dto, @Request() req) {
+        const ownerId = req.user.ownerId;
+        dto.ownerId = ownerId;
+        return this.permissionService.update({ownerId: ownerId},dto);
     }
 
 }

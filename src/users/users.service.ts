@@ -21,10 +21,26 @@ export class UsersService {
         return await this.userModel.findOne(filter).select(includePassword ? '+password' : '');
     }
 
+    /**
+     * all created user should be role Staff.
+     * different permission is granted in attribute: permission
+     * @see UserSchema for details
+     */
     async create(dto) {
         const salt = await genSalt();
         dto.password = await hash(dto.password, salt);
-        return await this.userModel.create(dto);
+
+        try {
+            return await this.userModel.create(dto);
+            
+        } catch(error) {
+            if (error.name === 'MongoError' && error.code === 11000) {
+                throw new HttpException('There was a duplicate key error', HttpStatus.CONFLICT);
+            } else {
+                throw new HttpException(error.errmsg, HttpStatus.BAD_REQUEST);
+            }
+        }
+
     }
 
     async delete(id) {
@@ -50,20 +66,16 @@ export class UsersService {
         }
 
         const payLoad = {
+            ownerId: user.role === 'Owner' ? user._id : user.ownerId,
             name: user.name,
             email: user.email,
-            permission: user.permission,
             role: user.role
         }
-        console.log(payLoad);
 
         const token = await this.authService.signPayload(payLoad);
         return {
             token: token,
-            user: {
-                name: user.name,
-                role: user.role,
-            }
+            username: user.name
         };
     }
 }

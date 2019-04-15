@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus, Inject, forwardRef } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -6,20 +6,33 @@ import { Model } from 'mongoose';
 export class PermissionService {
     constructor(@InjectModel('Permission') private readonly permissionModel: Model<any>,) {}
 
-    async findAll(filter = {}) {
-        return await this.permissionModel.find(filter);
-    }
-
     async findOne(filter = {}) {
-        return await this.permissionModel.findOne(filter).exec();
+        return await this.permissionModel.findOne(filter);
     }
 
-    async update(id, dto) {
-        return await this.permissionModel.findByIdAndUpdate(id, dto);
+    async update(filter, dto) {
+        return await this.permissionModel.updateOne(filter, dto, {upsert : true});
     }
 
-    async create(dto) {
-        return await this.permissionModel.create(dto);
+    async createDefault(ownerId) {
+        const rules = [
+            {
+                ownerId: ownerId,
+                groupName: 'Basic',
+                actions: ['FindAllUser']
+            },
+            {
+                ownerId: ownerId,
+                groupName: 'Medium',
+                actions: ['AddUser','EditUser','DeleteUser','FindAllUser','FindOneUser','AddCustomer','EditCustomer','DeleteCustomer','FindAllCustomer','FindOneCustomer',]
+            },
+            {
+                ownerId: ownerId,
+                groupName: 'High',
+                actions: ['AddUser','EditUser','DeleteUser','FindAllUser','FindOneUser','AddCustomer','EditCustomer','DeleteCustomer','FindAllCustomer','FindOneCustomer',]
+            },
+        ]
+        return await this.permissionModel.create(rules);
     }
 
 }

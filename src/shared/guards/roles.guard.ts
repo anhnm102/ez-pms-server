@@ -17,6 +17,10 @@ export class RolesGuard implements CanActivate {
         const request = context.switchToHttp().getRequest();
         const user = request.user;
 
+        if (user.role == 'Admin') { // Admin always has all permissions.
+            return true;
+        }
+
         const hasRole = () => roles.indexOf(user.role) >= 0;
 
         if (user && user.role && hasRole()) {
