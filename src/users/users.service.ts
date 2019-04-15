@@ -75,7 +75,8 @@ export class UsersService {
         const token = await this.authService.signPayload(payLoad);
         return {
             token: token,
-            username: user.name
+            username: user.name,
+            role: user.role,
         };
     }
 }
