@@ -6,6 +6,10 @@ import { Model } from 'mongoose';
 export class PermissionService {
     constructor(@InjectModel('Permission') private readonly permissionModel: Model<any>,) {}
 
+    async findAll() {
+        return await this.permissionModel.find();
+    }
+
     async findOne(filter = {}) {
         return await this.permissionModel.findOne(filter);
     }

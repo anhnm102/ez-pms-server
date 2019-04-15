@@ -7,17 +7,24 @@ import { UserRole } from '../users/models/user-role.enum';
 
 @Controller('permissions')
 @UseGuards(AuthGuard(), RolesGuard)
-@Roles(UserRole.Admin, UserRole.Owner)
 export class PermissionController {
     constructor(private permissionService: PermissionService) {}
 
     @Get()
-    findAll(@Request() req) {
+    @Roles(UserRole.Admin)
+    findAll() {
+        return this.permissionService.findAll();
+    }
+
+    @Get()
+    @Roles(UserRole.Owner)
+    findOne(@Request() req) {
         const q = {ownerId: req.user.ownerId};
         return this.permissionService.findOne(q);
     }
 
     @Put()
+    @Roles(UserRole.Owner)
     update(@Body() dto, @Request() req) {
         const ownerId = req.user.ownerId;
         dto.ownerId = ownerId;
