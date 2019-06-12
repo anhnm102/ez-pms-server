@@ -3,18 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { compare, genSalt, hash } from 'bcryptjs';
 import { Model } from 'mongoose';
 import { AuthService } from '../shared/auth/auth.service';
+import { BaseService } from '../shared/services/base.service';
 
 @Injectable()
-export class UsersService {
+export class UsersService extends BaseService {
     constructor(@InjectModel('User') private readonly userModel: Model<any>,
-    @Inject(forwardRef(() => AuthService)) private readonly authService: AuthService) {}
-
-    async findAll(filter = {}) {
-        return await this.userModel.find(filter);
-    }
-
-    async findById(id) {
-        return await this.userModel.findById(id);
+    @Inject(forwardRef(() => AuthService)) private readonly authService: AuthService) {
+        super();
+        this._model = userModel;
     }
 
     async findOne(filter = {}, includePassword?) {
@@ -29,26 +25,8 @@ export class UsersService {
     async create(dto) {
         const salt = await genSalt();
         dto.password = await hash(dto.password, salt);
-
-        try {
-            return await this.userModel.create(dto);
-            
-        } catch(error) {
-            if (error.name === 'MongoError' && error.code === 11000) {
-                throw new HttpException('There was a duplicate key error', HttpStatus.CONFLICT);
-            } else {
-                throw new HttpException(error.errmsg, HttpStatus.BAD_REQUEST);
-            }
-        }
-
-    }
-
-    async delete(id) {
-        return await this.userModel.findByIdAndDelete(id);
-    }
-
-    async update(id, dto) {
-        return await this.userModel.findByIdAndUpdate(id, dto);
+        
+        return super.create(dto);
     }
 
     async login(form) {
